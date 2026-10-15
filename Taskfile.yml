@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+
+tasks:
+  db:up:
+    desc: Запустить postgresql и дождаться готовности
+    cmds:
+      - docker compose up -d --wait db
+  db:stop:
+    desc: Остановить postgresql
+    cmds:
+      - docker compose stop db
+  db:status:
+    desc: Проверить состояние postgresql
+    cmds:
+      - docker compose ps db
+
+  migrate:up:
+    desc: Привести postgresql к последней миграции
+    cmds:
+      - goose -env .env up
+  migrate:status:
+    desc: Просмотреть состояний миграций
+    cmds:
+      - goose -env .env status
