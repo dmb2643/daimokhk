@@ -25,3 +25,17 @@ tasks:
     desc: Просмотреть состояний миграций
     cmds:
       - goose -env .env status
+
+
+  run:
+    dir: ./backend
+    desc: Запустить backend
+    cmds:
+      - go run ./cmd/server
+    silent: true
+  test:
+    dir: ./backend
+    desc: Провести go тесты
+    cmds:
+      - go test ./...
+    silent: true
