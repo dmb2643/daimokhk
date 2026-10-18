@@ -1,9 +1,11 @@
 package main
 
 import (
-	"log/slog"
+	"context"
+	"fmt"
 	"net/http"
 	"os"
+	"time"
 )
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
@@ -18,11 +20,33 @@ func newRouter() *http.ServeMux {
 }
 
 func main() {
-	r := newRouter()
-
-	if err := http.ListenAndServe("127.0.0.1:8080", r); err != nil {
-		slog.Error("error to start server:" + err.Error())
+	if err := run(context.Background()); err != nil {
+		fmt.Fprintf(os.Stderr, "critical error: %v\n", err)
 		os.Exit(1)
 	}
+}
 
+func run(ctx context.Context) error {
+	r := newRouter()
+
+	dsn := os.Getenv("POSTGRESQL_STRING")
+	if dsn == "" {
+		return fmt.Errorf("POSTGRESQL_STRING is required")
+	}
+
+	connectCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	pool, err := openDB(connectCtx, dsn)
+
+	cancel()
+	if err != nil {
+		return err
+	}
+
+	defer pool.Close()
+
+	if err := http.ListenAndServe("127.0.0.1:8080", r); err != nil {
+		return err
+	}
+
+	return nil
 }
