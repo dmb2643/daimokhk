@@ -39,5 +39,5 @@ tasks:
     dir: ./backend
     desc: Провести go тесты
     cmds:
-      - go test ./...
+     - go test -v -count=1 ./...
     silent: true

@@ -1,0 +1,216 @@
+openapi: 3.0.0
+info:
+    title: "Даймохк спецефикация"
+    version: 0.0.1
+servers:
+    -   url: http://localhost:8080/api
+        description: Go server
+paths:
+  /listings:
+    get:
+      operationId: ListListings
+      description: "список всех объявлений"
+      tags:
+        - "listings"
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: "Номер запрашиваемой страницы"
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: per_page
+          in: query
+          required: false
+          description: "Колличество эллементов на странице"
+          schema:
+            type: integer
+            minimum: 10
+            maximum: 100
+            default: 20
+
+      responses:
+        "200":
+          description: "получение списка всех объявлений"
+          content:
+            application/json:
+             schema:
+              type: array
+              items:
+                 $ref: '#/components/schemas/Listing'
+        "400":
+          description: "неправильный запрос"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                resp:
+                  value:
+                    message: "bad request"
+        "500":
+          description: ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                resp:
+                  $ref: '#/components/examples/InternalError'
+
+
+
+  /listings/{id}:
+    get:
+        operationId: GetListingByID
+        tags:
+          - "listings"
+        parameters:
+          - name: id
+            description: Идентефикатор объявления
+            in: path
+            required: true
+            schema:
+              type: integer
+              minimum: 1
+              maximum: 2147483647
+
+
+        responses:
+          "200":
+            description: Найденное объявление
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Listing'
+          "400":
+            description:  Некорректный идентефикатор объявления
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error'
+                examples:
+                  resp:
+                    value:
+                      message: "id must be an integer greater than or equal to 1"
+
+
+          "404":
+            description: Объявление не найдено
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error'
+                examples:
+                  resp:
+                    value:
+                      message: listing not found
+          "403":
+            description: Объявление снято модератором
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error'
+                examples:
+                  resp:
+                    value:
+                      message: "the listing has been removed by a moderator"
+          "500":
+            description: Внутрення ошибка сервера
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error'
+                examples:
+                  resp:
+                    $ref: '#/components/examples/InternalError'
+
+
+
+
+
+components:
+  schemas:
+    Listing:
+      required:
+        - id
+        - title
+        - description
+        - price
+        - phone_number
+        - whatsapp_number
+        - owner_id
+        - status
+        - created_at
+        - product_condition
+        - category
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 123
+          minimum: 1
+          maximum: 2147483647
+        title:
+          type: string
+          example: "Видеокарта rtx 3070"
+        description:
+          type: string
+          example: "Почти новая. Покупал месяц назад для ведьмака"
+        price:
+          type: integer
+          example: 123
+          minimum: 0
+        phone_number:
+          type: string
+          example: "88888888888"
+        whatsapp_number:
+          type: string
+          example: "88888888888"
+          nullable: true
+        owner_id:
+          type: integer
+          example: 1
+          minimum: 1
+        status:
+          type: string
+          enum:
+            - активно
+            - закрыто
+          example: активно
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-10-19T12:30:00+03:00"
+        product_condition:
+          type: string
+          enum:
+            - новый
+            - "б/у"
+          example: "новый"
+        category:
+          type: object
+          required:
+            - id
+            - name
+          properties:
+            id:
+              type: integer
+              example: 1
+              minimum: 1
+            name:
+              type: string
+              example: "видеокарты"
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+  examples:
+    InternalError:
+      value:
+        message: "internal server error"

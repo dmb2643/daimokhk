@@ -3,9 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/dmb2643/daimokhk/backend/internal/listing"
 )
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
@@ -41,9 +44,16 @@ func run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-
 	defer pool.Close()
 
+	listingRepo := listing.NewPostgreSQLRepo(pool)
+	listingService := listing.NewService(*listingRepo)
+	listingHandler := listing.NewHandler(*listingService)
+
+	r.HandleFunc("GET /listings", listingHandler.GetListings)
+	r.HandleFunc("GET /listings/{id}", listingHandler.GetListingByID)
+
+	slog.Info("runing")
 	if err := http.ListenAndServe("127.0.0.1:8080", r); err != nil {
 		return err
 	}
