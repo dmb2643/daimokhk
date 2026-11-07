@@ -24,6 +24,17 @@ type ListingDTO struct {
 	ProductCondition listingCondition `json:"product_condition"`
 	Category         CategoryDto      `json:"category"`
 }
+type CreateListingRequest struct {
+	Title            string           `json:"title"`
+	Description      string           `json:"description"`
+	Price            int              `json:"price"`
+	PhoneNumber      string           `json:"phone_number"`
+	WhatsAppNumber   *string          `json:"whatsapp_number"`
+	Status           listingStatus    `json:"status"`
+	CreatedAt        time.Time        `json:"created_at"`
+	ProductCondition listingCondition `json:"product_condition"`
+	Category         CategoryDto      `json:"category"`
+}
 
 type ErrorResponce struct {
 	Msg string `json:"message"`

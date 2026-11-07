@@ -5,13 +5,57 @@ info:
 servers:
     -   url: http://localhost:8080/api
         description: Go server
+security:
+  - bearerAuth: []
 paths:
+  /auth/register:
+    post:
+      description: Регистрация пользователя
+      tags:
+        - auth
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - login
+                - password
+              properties:
+                name:
+                  type: string
+                  example: "Busua"
+                  minimum: 5
+                  maximum: 10
+                login:
+                  type: string
+                  minimum: 5
+                  maximum: 15
+                  example: "Muhammad2005"
+                password:
+                  type: string
+                  format: password
+                  minimum: 8
+                  example: "Hesoay4783!@"
+
+      responses:
+        "201":
+          description: Пользователь зарегистрирован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JwtResonce'
+
+
   /listings:
     get:
       operationId: ListListings
       description: "список всех объявлений"
       tags:
         - "listings"
+      security: []
       parameters:
         - name: page
           in: query
@@ -67,6 +111,7 @@ paths:
         operationId: GetListingByID
         tags:
           - "listings"
+        security: []
         parameters:
           - name: id
             description: Идентефикатор объявления
@@ -210,7 +255,21 @@ components:
       properties:
         message:
           type: string
+    JwtResonce:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+          description: "JWT токен для аунтефикации запросов"
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9........."
   examples:
     InternalError:
       value:
         message: "internal server error"
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
